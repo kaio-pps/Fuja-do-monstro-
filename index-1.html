@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fuja do Monstro</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080b18;color:#fff;font-family:Arial,sans-serif;text-align:center}
+h1{margin:12px 0;color:#fff}
+#game{position:relative;margin:auto;width:min(94vw,420px);height:650px;overflow:hidden;border:3px solid #6b4cff;border-radius:14px;background:linear-gradient(#151b3c,#080b18)}
+#hud{position:absolute;z-index:5;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;font-weight:bold}
+#player{position:absolute;z-index:3;bottom:35px;left:50%;width:48px;height:58px;transform:translateX(-50%);border-radius:14px 14px 8px 8px;background:#e43d30;box-shadow:0 0 12px #ff574d}
+.coin{position:absolute;width:25px;height:25px;border-radius:50%;background:#ffd21f;border:3px solid #fff08a;box-shadow:0 0 10px #ffd21f}
+.enemy{position:absolute;width:45px;height:45px;border-radius:50%;background:#7c22d9;box-shadow:0 0 12px #ff335f}
+.obstacle{position:absolute;width:52px;height:25px;border-radius:6px;background:#555}
+#monster{position:absolute;z-index:2;bottom:-20px;left:50%;width:130px;height:90px;transform:translateX(-50%);border-radius:50% 50% 20px 20px;background:#31105c;box-shadow:0 0 30px #a020f0}
+#monster:after{content:"👹";font-size:55px}
+button{border:0;border-radius:10px;padding:12px 20px;margin:7px;background:#19b84a;color:#fff;font-weight:bold;font-size:16px}
+button.secondary{background:#35405d}
+#message{min-height:26px;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>👾 FUJA DO MONSTRO</h1>
+<div id="game">
+  <div id="hud"><span>🪙 <b id="score">0</b></span><span>❤️ <b id="lives">3</b></span><span>⏱️ <b id="time">0</b></span></div>
+  <div id="monster"></div>
+  <div id="player"></div>
+</div>
+<div>
+  <button id="play">🎮 Jogar</button>
+  <button class="secondary" id="left">⬅️</button>
+  <button class="secondary" id="right">➡️</button>
+</div>
+<div id="message">Colete moedas e desvie dos obstáculos!</div>
+<script>
+const game=document.getElementById('game'),player=document.getElementById('player');
+const scoreEl=document.getElementById('score'), livesEl=document.getElementById('lives'),timeEl=document.getElementById('time'),msg=document.getElementById('message');
+let running=false,score=0,lives=3,time=0,x=50,items=[],spawnTimer,timer,moveTimer;
+
+function start(){
+  items.forEach(i=>i.el.remove()); items=[]; score=0;lives=3;time=0;x=50;
+  player.style.left=x+'%'; scoreEl.textContent=score;livesEl.textContent=lives;timeEl.textContent=time;
+  msg.textContent='Corra! Colete moedas e desvie!';
+  running=true;
+  clearInterval(spawnTimer); clearInterval(timer); clearInterval(moveTimer);
+  spawnTimer=setInterval(spawn,650);
+  timer=setInterval(()=>{if(running){time++;timeEl.textContent=time}},1000);
+  moveTimer=setInterval(update,30);
+}
+function spawn(){
+  if(!running)return;
+  const el=document.createElement('div');
+  const coin=Math.random()<.45;
+  el.className=coin?'coin':'obstacle';
+  el.style.left=(8+Math.random()*84)+'%'; el.style.top='-40px';
+  game.appendChild(el); items.push({el,y:-40,coin});
+}
+function update(){
+  if(!running)return;
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i]; it.y+=5; it.el.style.top=it.y+'px';
+    const a=it.el.getBoundingClientRect(),b=player.getBoundingClientRect();
+    if(a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top){
+      if(it.coin){score++;scoreEl.textContent=score;msg.textContent='🪙 Boa!'}
+      else{lives--;livesEl.textContent=lives;msg.textContent='💥 Cuidado!';}
+      it.el.remove();items.splice(i,1);
+      if(lives<=0) end(); continue;
+    }
+    if(it.y>game.clientHeight+20){it.el.remove();items.splice(i,1);}
+  }
+}
+function end(){
+  running=false; clearInterval(spawnTimer);clearInterval(timer);clearInterval(moveTimer);
+  msg.textContent='👹 Fim de jogo! Pontuação: '+score+' — toque em Jogar para tentar de novo.';
+}
+function move(d){if(!running)return;x=Math.max(8,Math.min(92,x+d));player.style.left=x+'%'}
+document.getElementById('play').onclick=start;
+document.getElementById('left').onpointerdown=()=>move(-6);
+document.getElementById('right').onpointerdown=()=>move(6);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')move(-6);if(e.key==='ArrowRight')move(6);if(e.key===' '&&!running)start()});
+game.addEventListener('pointermove',e=>{
+  if(!running)return;
+  const r=game.getBoundingClientRect(); x=Math.max(8,Math.min(92,(e.clientX-r.left)/r.width*100)); player.style.left=x+'%';
+});
+</script>
+</body>
+</html>
