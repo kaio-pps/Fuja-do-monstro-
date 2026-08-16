@@ -2,88 +2,573 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fuja do Monstro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Corre no Trilho</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080b18;color:#fff;font-family:Arial,sans-serif;text-align:center}
-h1{margin:12px 0;color:#fff}
-#game{position:relative;margin:auto;width:min(94vw,420px);height:650px;overflow:hidden;border:3px solid #6b4cff;border-radius:14px;background:linear-gradient(#151b3c,#080b18)}
-#hud{position:absolute;z-index:5;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;font-weight:bold}
-#player{position:absolute;z-index:3;bottom:35px;left:50%;width:48px;height:58px;transform:translateX(-50%);border-radius:14px 14px 8px 8px;background:#e43d30;box-shadow:0 0 12px #ff574d}
-.coin{position:absolute;width:25px;height:25px;border-radius:50%;background:#ffd21f;border:3px solid #fff08a;box-shadow:0 0 10px #ffd21f}
-.enemy{position:absolute;width:45px;height:45px;border-radius:50%;background:#7c22d9;box-shadow:0 0 12px #ff335f}
-.obstacle{position:absolute;width:52px;height:25px;border-radius:6px;background:#555}
-#monster{position:absolute;z-index:2;bottom:-20px;left:50%;width:130px;height:90px;transform:translateX(-50%);border-radius:50% 50% 20px 20px;background:#31105c;box-shadow:0 0 30px #a020f0}
-#monster:after{content:"👹";font-size:55px}
-button{border:0;border-radius:10px;padding:12px 20px;margin:7px;background:#19b84a;color:#fff;font-weight:bold;font-size:16px}
-button.secondary{background:#35405d}
-#message{min-height:26px;font-weight:bold}
+body{
+ margin:0;
+ background:#10131f;
+ color:white;
+ font-family:Arial,sans-serif;
+ overflow:hidden
+}
+button{
+ border:0;
+ border-radius:15px;
+ padding:18px;
+ font-size:20px;
+ font-weight:bold;
+ color:white;
+ cursor:pointer
+}
+#menu{
+ height:100vh;
+ padding:20px;
+ background:
+ linear-gradient(#1686d8aa,#071b35cc),
+ linear-gradient(135deg,#1d9be0,#14213d);
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center
+}
+.logo{
+ font-size:45px;
+ font-weight:900;
+ text-align:center;
+ text-shadow:4px 5px #111;
+ margin-bottom:15px
+}
+.logo span{color:#ffc400}
+.character{
+ font-size:110px;
+ margin:5px
+}
+.player{
+ background:#151827;
+ border:2px solid #333b58;
+ border-radius:18px;
+ padding:10px 25px;
+ margin-bottom:15px;
+ text-align:center
+}
+.buttons{
+ width:min(420px,95vw);
+ display:grid;
+ gap:10px
+}
+.play{background:#ffae00}
+.shop{background:#148be0}
+.mission{background:#48b928}
+.characters{background:#8b32d5}
+.smallButtons{
+ display:flex;
+ gap:10px;
+ margin-top:12px
+}
+.smallButtons button{
+ padding:12px 18px;
+ background:#20263a
+}
+
+#game{
+ display:none;
+ position:relative;
+ width:100vw;
+ height:100vh;
+ background:linear-gradient(#28a8e8,#e9a65a);
+ overflow:hidden
+}
+#hud{
+ position:absolute;
+ top:10px;
+ left:10px;
+ right:10px;
+ z-index:10;
+ display:flex;
+ justify-content:space-between;
+ font-size:20px
+}
+.hudbox{
+ background:#111827dd;
+ padding:10px 15px;
+ border-radius:14px
+}
+canvas{
+ display:block;
+ width:100%;
+ height:100%
+}
+#controls{
+ position:absolute;
+ bottom:20px;
+ left:0;
+ right:0;
+ display:flex;
+ justify-content:center;
+ gap:20px;
+ z-index:20
+}
+.control{
+ width:75px;
+ height:65px;
+ padding:5px;
+ background:#151827dd;
+ font-size:30px
+}
+#gameOver{
+ display:none;
+ position:absolute;
+ inset:0;
+ background:#000b;
+ z-index:30;
+ align-items:center;
+ justify-content:center;
+ flex-direction:column;
+ text-align:center
+}
+.panel{
+ background:#171b2b;
+ border:2px solid #414969;
+ border-radius:22px;
+ padding:25px;
+ width:min(390px,90vw);
+ text-align:center
+}
+.panel button{width:100%;margin-top:10px}
+.back{background:#333b55}
+
+.modal{
+ display:none;
+ position:absolute;
+ inset:0;
+ background:#090d18f5;
+ z-index:50;
+ align-items:center;
+ justify-content:center;
+ padding:20px
+}
+.cards{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:10px;
+ margin-top:15px
+}
+.card{
+ background:#252b40;
+ padding:15px;
+ border-radius:15px;
+ text-align:center
+}
+.card button{
+ padding:10px;
+ width:100%;
+ background:#168be0
+}
+.close{background:#e53935}
 </style>
 </head>
-<body>
-<h1>👾 FUJA DO MONSTRO</h1>
-<div id="game">
-  <div id="hud"><span>🪙 <b id="score">0</b></span><span>❤️ <b id="lives">3</b></span><span>⏱️ <b id="time">0</b></span></div>
-  <div id="monster"></div>
-  <div id="player"></div>
-</div>
-<div>
-  <button id="play">🎮 Jogar</button>
-  <button class="secondary" id="left">⬅️</button>
-  <button class="secondary" id="right">➡️</button>
-</div>
-<div id="message">Colete moedas e desvie dos obstáculos!</div>
-<script>
-const game=document.getElementById('game'),player=document.getElementById('player');
-const scoreEl=document.getElementById('score'), livesEl=document.getElementById('lives'),timeEl=document.getElementById('time'),msg=document.getElementById('message');
-let running=false,score=0,lives=3,time=0,x=50,items=[],spawnTimer,timer,moveTimer;
 
-function start(){
-  items.forEach(i=>i.el.remove()); items=[]; score=0;lives=3;time=0;x=50;
-  player.style.left=x+'%'; scoreEl.textContent=score;livesEl.textContent=lives;timeEl.textContent=time;
-  msg.textContent='Corra! Colete moedas e desvie!';
-  running=true;
-  clearInterval(spawnTimer); clearInterval(timer); clearInterval(moveTimer);
-  spawnTimer=setInterval(spawn,650);
-  timer=setInterval(()=>{if(running){time++;timeEl.textContent=time}},1000);
-  moveTimer=setInterval(update,30);
+<body>
+
+<div id="menu">
+
+ <div class="logo">CORRE<br><span>NO TRILHO</span></div>
+
+ <div class="character">🧑🏻‍🎤</div>
+
+ <div class="player">
+   🪙 <b id="coins">100</b>
+   &nbsp;&nbsp;
+   💎 <b id="gems">5</b>
+   <br>
+   ⭐ NÍVEL <b id="level">1</b>
+ </div>
+
+ <div class="buttons">
+   <button class="play" onclick="startGame()">▶ JOGAR</button>
+   <button class="shop" onclick="openShop()">🛒 LOJA</button>
+   <button class="mission" onclick="openMissions()">📋 MISSÕES</button>
+   <button class="characters" onclick="openCharacters()">🧍 PERSONAGENS</button>
+ </div>
+
+ <div class="smallButtons">
+   <button onclick="alert('Configurações em breve ⚙️')">⚙️</button>
+   <button onclick="alert('Ranking em breve 🏆')">🏆</button>
+   <button onclick="alert('Conquistas em breve ⭐')">⭐</button>
+ </div>
+
+</div>
+
+<div id="game">
+
+ <div id="hud">
+   <div class="hudbox">🪙 <span id="gameCoins">0</span></div>
+   <div class="hudbox">🏆 <span id="score">0</span></div>
+ </div>
+
+ <canvas id="canvas"></canvas>
+
+ <div id="controls">
+   <button class="control" onclick="moveLeft()">⬅️</button>
+   <button class="control" onclick="jump()">⬆️</button>
+   <button class="control" onclick="moveRight()">➡️</button>
+ </div>
+
+ <div id="gameOver">
+   <div class="panel">
+     <h1>💥 FIM DE JOGO</h1>
+     <h2>Pontuação: <span id="finalScore">0</span></h2>
+     <button class="play" onclick="startGame()">🔄 JOGAR NOVAMENTE</button>
+     <button class="back" onclick="backMenu()">🏠 MENU</button>
+   </div>
+ </div>
+
+</div>
+
+<div id="shopModal" class="modal">
+ <div class="panel">
+  <h1>🛒 LOJA</h1>
+  <p>Suas moedas: 🪙 <span id="shopCoins">100</span></p>
+
+  <div class="cards">
+   <div class="card">⚡ Turbo<br><small>50 moedas</small>
+    <button onclick="buy(50)">COMPRAR</button>
+   </div>
+   <div class="card">🧲 Ímã<br><small>75 moedas</small>
+    <button onclick="buy(75)">COMPRAR</button>
+   </div>
+  </div>
+
+  <button class="close" onclick="closeModals()">FECHAR</button>
+ </div>
+</div>
+
+<div id="missionModal" class="modal">
+ <div class="panel">
+  <h1>📋 MISSÕES</h1>
+  <p>🏃 Corra 500 metros</p>
+  <p>🪙 Pegue 20 moedas</p>
+  <p>🚆 Desvie de 10 obstáculos</p>
+  <button class="close" onclick="closeModals()">FECHAR</button>
+ </div>
+</div>
+
+<div id="characterModal" class="modal">
+ <div class="panel">
+  <h1>🧍 PERSONAGENS</h1>
+
+  <div class="cards">
+   <div class="card">🧑🏻‍🎤<br>Leo
+    <button onclick="selectCharacter('🧑🏻‍🎤')">ESCOLHER</button>
+   </div>
+   <div class="card">👩🏻‍🎤<br>Luna
+    <button onclick="selectCharacter('👩🏻‍🎤')">ESCOLHER</button>
+   </div>
+   <div class="card">🧑🏽‍🚀<br>Max
+    <button onclick="selectCharacter('🧑🏽‍🚀')">ESCOLHER</button>
+   </div>
+   <div class="card">🧑🏿‍🎨<br>Jax
+    <button onclick="selectCharacter('🧑🏿‍🎨')">ESCOLHER</button>
+   </div>
+  </div>
+
+  <button class="close" onclick="closeModals()">FECHAR</button>
+ </div>
+</div>
+
+<script>
+let coins=Number(localStorage.getItem("coins"))||100;
+let gems=Number(localStorage.getItem("gems"))||5;
+let level=Number(localStorage.getItem("level"))||1;
+let character=localStorage.getItem("character")||"🧑🏻‍🎤";
+
+const coinText=document.getElementById("coins");
+const gemText=document.getElementById("gems");
+const levelText=document.getElementById("level");
+
+function updateMenu(){
+ coinText.textContent=coins;
+ gemText.textContent=gems;
+ levelText.textContent=level;
+ document.querySelector(".character").textContent=character;
 }
-function spawn(){
-  if(!running)return;
-  const el=document.createElement('div');
-  const coin=Math.random()<.45;
-  el.className=coin?'coin':'obstacle';
-  el.style.left=(8+Math.random()*84)+'%'; el.style.top='-40px';
-  game.appendChild(el); items.push({el,y:-40,coin});
+updateMenu();
+
+function save(){
+ localStorage.setItem("coins",coins);
+ localStorage.setItem("gems",gems);
+ localStorage.setItem("level",level);
+ localStorage.setItem("character",character);
 }
-function update(){
-  if(!running)return;
-  for(let i=items.length-1;i>=0;i--){
-    const it=items[i]; it.y+=5; it.el.style.top=it.y+'px';
-    const a=it.el.getBoundingClientRect(),b=player.getBoundingClientRect();
-    if(a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top){
-      if(it.coin){score++;scoreEl.textContent=score;msg.textContent='🪙 Boa!'}
-      else{lives--;livesEl.textContent=lives;msg.textContent='💥 Cuidado!';}
-      it.el.remove();items.splice(i,1);
-      if(lives<=0) end(); continue;
-    }
-    if(it.y>game.clientHeight+20){it.el.remove();items.splice(i,1);}
+
+function openShop(){
+ document.getElementById("shopCoins").textContent=coins;
+ document.getElementById("shopModal").style.display="flex";
+}
+
+function openMissions(){
+ document.getElementById("missionModal").style.display="flex";
+}
+
+function openCharacters(){
+ document.getElementById("characterModal").style.display="flex";
+}
+
+function closeModals(){
+ document.querySelectorAll(".modal").forEach(x=>x.style.display="none");
+}
+
+function buy(price){
+ if(coins>=price){
+   coins-=price;
+   save();
+   updateMenu();
+   document.getElementById("shopCoins").textContent=coins;
+   alert("Item comprado! 🎉");
+ }else{
+   alert("Você não tem moedas suficientes.");
+ }
+}
+
+function selectCharacter(c){
+ character=c;
+ save();
+ updateMenu();
+ closeModals();
+}
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let lane=1;
+let playerY=0;
+let jumping=false;
+let gameRunning=false;
+let score=0;
+let gameCoins=0;
+let obstacles=[];
+let coinsOnTrack=[];
+let speed=6;
+let last=0;
+
+function resize(){
+ canvas.width=innerWidth;
+ canvas.height=innerHeight;
+}
+addEventListener("resize",resize);
+resize();
+
+function startGame(){
+ document.getElementById("menu").style.display="none";
+ document.getElementById("game").style.display="block";
+ document.getElementById("gameOver").style.display="none";
+
+ score=0;
+ gameCoins=0;
+ lane=1;
+ playerY=0;
+ obstacles=[];
+ coinsOnTrack=[];
+ speed=6;
+ gameRunning=true;
+
+ requestAnimationFrame(loop);
+}
+
+function backMenu(){
+ gameRunning=false;
+ document.getElementById("game").style.display="none";
+ document.getElementById("menu").style.display="flex";
+ updateMenu();
+}
+
+function moveLeft(){
+ if(lane>0) lane--;
+}
+
+function moveRight(){
+ if(lane<2) lane++;
+}
+
+function jump(){
+ if(!jumping){
+  jumping=true;
+  let start=performance.now();
+
+  function anim(t){
+   let p=Math.min((t-start)/650,1);
+   playerY=Math.sin(p*Math.PI)*150;
+
+   if(p<1) requestAnimationFrame(anim);
+   else{
+    playerY=0;
+    jumping=false;
+   }
   }
+  requestAnimationFrame(anim);
+ }
 }
-function end(){
-  running=false; clearInterval(spawnTimer);clearInterval(timer);clearInterval(moveTimer);
-  msg.textContent='👹 Fim de jogo! Pontuação: '+score+' — toque em Jogar para tentar de novo.';
-}
-function move(d){if(!running)return;x=Math.max(8,Math.min(92,x+d));player.style.left=x+'%'}
-document.getElementById('play').onclick=start;
-document.getElementById('left').onpointerdown=()=>move(-6);
-document.getElementById('right').onpointerdown=()=>move(6);
-document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')move(-6);if(e.key==='ArrowRight')move(6);if(e.key===' '&&!running)start()});
-game.addEventListener('pointermove',e=>{
-  if(!running)return;
-  const r=game.getBoundingClientRect(); x=Math.max(8,Math.min(92,(e.clientX-r.left)/r.width*100)); player.style.left=x+'%';
+
+addEventListener("keydown",e=>{
+ if(e.key==="ArrowLeft")moveLeft();
+ if(e.key==="ArrowRight")moveRight();
+ if(e.key==="ArrowUp"||e.key===" ")jump();
 });
+
+function laneX(l){
+ return canvas.width/2+(l-1)*Math.min(150,canvas.width*.25);
+}
+
+function drawBackground(){
+ let w=canvas.width,h=canvas.height;
+
+ ctx.fillStyle="#43a8dc";
+ ctx.fillRect(0,0,w,h);
+
+ ctx.fillStyle="#2d6c50";
+ ctx.fillRect(0,h*.42,w,h*.58);
+
+ for(let i=0;i<9;i++){
+  ctx.fillStyle=i%2?"#d65a3a":"#e4b34e";
+  ctx.fillRect(i*100,h*.22,80,180);
+ }
+
+ ctx.fillStyle="#333";
+ ctx.fillRect(0,h*.62,w,h*.38);
+
+ ctx.strokeStyle="#aaa";
+ ctx.lineWidth=8;
+
+ for(let l=0;l<3;l++){
+  let x=laneX(l);
+  ctx.beginPath();
+  ctx.moveTo(x-30,h);
+  ctx.lineTo(x-8,h*.62);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x+30,h);
+  ctx.lineTo(x+8,h*.62);
+  ctx.stroke();
+ }
+
+ ctx.strokeStyle="#777";
+ ctx.lineWidth=5;
+
+ for(let y=h*.65;y<h;y+=55){
+  ctx.beginPath();
+  ctx.moveTo(0,y);
+  ctx.lineTo(w,y);
+  ctx.stroke();
+ }
+}
+
+function drawPlayer(){
+ let x=laneX(lane);
+ let y=canvas.height*.72-playerY;
+
+ ctx.font="75px Arial";
+ ctx.textAlign="center";
+ ctx.fillText(character,x,y);
+}
+
+function drawObstacle(o){
+ let x=laneX(o.lane);
+ let y=o.y;
+
+ ctx.font="60px Arial";
+ ctx.textAlign="center";
+ ctx.fillText(o.type,x,y);
+}
+
+function drawCoin(c){
+ let x=laneX(c.lane);
+
+ ctx.font="40px Arial";
+ ctx.textAlign="center";
+ ctx.fillText("🪙",x,c.y);
+}
+
+function spawn(){
+ if(Math.random()<.035){
+  obstacles.push({
+   lane:Math.floor(Math.random()*3),
+   y:canvas.height*.55,
+   type:Math.random()<.5?"🚧":"🚆"
+  });
+ }
+
+ if(Math.random()<.045){
+  coinsOnTrack.push({
+   lane:Math.floor(Math.random()*3),
+   y:canvas.height*.55
+  });
+ }
+}
+
+function update(){
+ score++;
+ speed+=.001;
+
+ spawn();
+
+ obstacles.forEach(o=>o.y+=speed*1.7);
+ coinsOnTrack.forEach(c=>c.y+=speed*1.7);
+
+ obstacles=obstacles.filter(o=>o.y<canvas.height+100);
+ coinsOnTrack=coinsOnTrack.filter(c=>c.y<canvas.height+80);
+
+ let py=canvas.height*.72-playerY;
+
+ obstacles.forEach(o=>{
+  if(o.lane===lane && Math.abs(o.y-py)<55 && playerY<60){
+   endGame();
+  }
+ });
+
+ coinsOnTrack.forEach((c,i)=>{
+  if(c.lane===lane && Math.abs(c.y-py)<60){
+   gameCoins++;
+   coinsOnTrack.splice(i,1);
+  }
+ });
+}
+
+function loop(t){
+ if(!gameRunning)return;
+
+ update();
+
+ drawBackground();
+ drawPlayer();
+
+ obstacles.forEach(drawObstacle);
+ coinsOnTrack.forEach(drawCoin);
+
+ document.getElementById("score").textContent=Math.floor(score/10);
+ document.getElementById("gameCoins").textContent=gameCoins;
+
+ requestAnimationFrame(loop);
+}
+
+function endGame(){
+ if(!gameRunning)return;
+
+ gameRunning=false;
+
+ coins+=gameCoins;
+ level=Math.max(level,Math.floor(score/1000)+1);
+
+ save();
+
+ document.getElementById("finalScore").textContent=Math.floor(score/10);
+ document.getElementById("gameOver").style.display="flex";
+ updateMenu();
+}
 </script>
+
 </body>
-</html>
+    </html>
